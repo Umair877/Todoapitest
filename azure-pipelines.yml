@@ -8,8 +8,8 @@ pool:
 variables:
   solution: '**/*.sln'
   buildConfiguration: 'Release'
-  deployTargetFolder: '/var/www/myapp' 
-  serviceName: 'myapp.service'
+  deployTargetFolder: '/var/www/' 
+  serviceName: 'todoapp.service'
 
 stages:
 - stage: BuildAndTest
@@ -101,3 +101,107 @@ stages:
               sudo systemctl start $(serviceName)
               sudo systemctl status $(serviceName) --no-pager
             displayName: 'Start Kestrel Service'
+#--------------------------------------------------------------------Backup is here of above----------------------
+# ASP.NET Core CI/CD Pipeline for Ubuntu Standalone Kestrel
+# trigger:
+# - main
+
+# pool:
+#   name: 'SelfHosted'
+
+# variables:
+#   solution: '**/*.sln'
+#   buildConfiguration: 'Release'
+#   deployTargetFolder: '/var/www/myapp' 
+#   serviceName: 'myapp.service'
+
+# stages:
+# - stage: BuildAndTest
+#   displayName: 'CI Stage: Build and Test'
+#   jobs:
+#   - job: CI_Job
+#     steps:
+#     - task: DotNetCoreCLI@2
+#       displayName: 'Restore Projects'
+#       inputs:
+#         command: 'restore'
+#         projects: '**/*.csproj'
+
+#     - task: DotNetCoreCLI@2
+#       displayName: 'Build Projects'
+#       inputs:
+#         command: 'build'
+#         projects: '**/*.csproj'
+#         arguments: '--configuration $(buildConfiguration)'
+
+#     - task: DotNetCoreCLI@2
+#       displayName: 'Run Unit Tests'
+#       inputs:
+#         command: 'test'
+#         projects: '**/*Tests.csproj'
+#         arguments: '--configuration $(buildConfiguration)'
+
+#     # Publish production binaries to a staging directory
+#     - task: DotNetCoreCLI@2
+#       displayName: 'Publish Web Application'
+#       inputs:
+#         command: 'publish'
+#         publishWebProjects: true
+#         arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+#         zipAfterPublish: false
+
+#     #Save the files for the deployment stage
+#     - task: PublishBuildArtifacts@1
+#       displayName: 'Upload Artifacts'
+#       inputs:
+#         PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+#         ArtifactName: 'drop'
+#         publishLocation: 'Container'
+
+#     # - task: PublishPipelineArtifact@1
+#     #   displayName: 'Publish Build Artifacts to Pipeline Storage'
+#     #   inputs:
+#     #     targetPath: '$(build.artifactStagingDirectory)'
+#     #     artifactName: 'drop'
+
+# - stage: Deploy
+#   displayName: 'CD Stage: Deploy to Kestrel'
+#   dependsOn: BuildAndTest
+#   condition: succeeded()
+#   jobs:
+#   - deployment: CD_Job
+#     environment: 'Production'
+#     strategy:
+#       runOnce:
+#         deploy:
+#           steps:
+#           # Download files generated from the build stage
+#           - task: DownloadBuildArtifacts@0
+#             displayName: 'Download Artifacts'
+#             inputs:
+#               buildType: 'current'
+#               downloadType: 'single'
+#               artifactName: 'drop'
+#               downloadPath: '$(System.ArtifactsDirectory)'
+#           # Overwrite old binaries with the new deployment files
+#           - task: CopyFiles@2
+#             displayName: 'Copy Files to Target Directory'
+#             inputs:
+#               SourceFolder: '$(System.ArtifactsDirectory)/drop'
+#               Contents: '**'
+#               TargetFolder: '$(deployTargetFolder)'
+#               CleanTargetFolder: false # Set to true only if you want to wipe the folder completely first
+#               OverWrite: true
+
+#           # Stop Kestrel service to unlock application files
+#           - script: |
+#               echo "Stopping Kestrel service..."
+#               sudo systemctl stop $(serviceName)
+#             displayName: 'Stop Kestrel Service'
+
+#           # Start Kestrel back up with the updated code
+#           - script: |
+#               echo "Starting Kestrel service..."
+#               sudo systemctl start $(serviceName)
+#               sudo systemctl status $(serviceName) --no-pager
+#             displayName: 'Start Kestrel Service'
