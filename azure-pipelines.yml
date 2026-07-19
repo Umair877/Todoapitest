@@ -17,6 +17,12 @@ stages:
   jobs:
   - job: CI_Job
     steps:
+
+    - task: UseDotNet@2
+      displayName: 'Install .NET Core SDK & Runtime'
+      inputs:
+        packageType: 'sdk'
+        version: '8.x'
     - task: DotNetCoreCLI@2
       displayName: 'Restore Projects - Production'
       inputs:
